@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Eye drops">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0" stop-color="#4e9dc1"/>
+      <stop offset="0.52" stop-color="#2b7e95"/>
+      <stop offset="1" stop-color="#1a6f6a"/>
+    </radialGradient>
+    <linearGradient id="drop" x1="0" y1="0" x2="0.18" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dceff1"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#2b8496"/>
+  <circle cx="150" cy="140" r="300" fill="#1f7466" opacity="0.55"/>
+  <path fill="#eef8f9" d="M256 108 C236 168 114 224 114 300 A142 142 0 0 0 398 300 C398 224 276 168 256 108 Z"/>
+  <path fill="#2b8496" opacity="0.22" d="M196 258 C196 292 214 316 236 322 C216 306 206 282 206 258 C206 240 212 224 222 210 C204 224 196 240 196 258 Z"/>
+</svg>

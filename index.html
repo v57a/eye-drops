@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#eaf0ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#080c0b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Eye drops">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="icon" href="./icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<title>Eye drops</title>
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --med-a: #2a6f95;
+    --med-b: #1d7a63;
+
+    --bg-1: #f7faf9;
+    --bg-2: #e5eeed;
+    --card: #ffffff;
+    --ink: #12211f;
+    --muted: #5c716e;
+    --ring: rgba(18, 33, 31, 0.46);
+    --wash: rgba(18, 33, 31, 0.035);
+    --hairline: rgba(18, 33, 31, 0.06);
+    --shadow:
+      0 1px 1px rgba(18, 33, 31, 0.03),
+      0 18px 40px -20px rgba(18, 33, 31, 0.28),
+      0 6px 16px -10px rgba(18, 33, 31, 0.12);
+
+    --name-w: clamp(76px, 24vw, 100px);
+    --dot-size: clamp(26px, 9vw, 36px);
+    --dot-gap: clamp(3px, 1.3vw, 8px);
+    --ease: cubic-bezier(0.22, 0.78, 0.24, 1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --med-a: #74bede;
+      --med-b: #55c8a6;
+      --bg-1: #101817;
+      --bg-2: #060a09;
+      --card: #131b1a;
+      --ink: #e9f2f0;
+      --muted: #9aada7;
+      --ring: rgba(233, 242, 240, 0.40);
+      --wash: rgba(233, 242, 240, 0.045);
+      --hairline: rgba(233, 242, 240, 0.07);
+      --shadow:
+        0 1px 1px rgba(0, 0, 0, 0.2),
+        0 20px 44px -20px rgba(0, 0, 0, 0.85),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background-color: var(--bg-2);
+    background-image:
+      radial-gradient(125% 95% at 50% -10%, var(--bg-1) 0%, var(--bg-2) 72%, var(--bg-2) 100%);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .widget {
+    width: min(398px, calc(100vw - 32px));
+    background: var(--card);
+    border-radius: 28px;
+    padding: clamp(12px, 4vw, 20px) clamp(12px, 4vw, 20px) 9px;
+    box-shadow: var(--shadow);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: var(--name-w) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(6px, 2vw, 12px);
+  }
+  .row:nth-child(1) { --accent: var(--med-a); }
+  .row:nth-child(2) { --accent: var(--med-b); }
+
+  .name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .tick {
+    width: 5px;
+    height: 5px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.9;
+  }
+
+  .name {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-size: clamp(13px, 3.8vw, 14.5px);
+    font-weight: 600;
+    letter-spacing: -0.011em;
+    line-height: 1.22;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+    overflow: hidden;
+    max-height: calc(2 * 1.22em + 6px);
+    padding: 3px 5px;
+    margin-left: -5px;
+    border-radius: 7px;
+    cursor: text;
+    outline: none;
+    -webkit-user-select: text;
+    user-select: text;
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .name:hover { background: var(--wash); }
+  .name:focus {
+    background: var(--wash);
+    box-shadow: 0 0 0 1px var(--hairline);
+  }
+  .name:empty::before {
+    content: attr(data-fallback);
+    color: var(--muted);
+    opacity: 0.7;
+  }
+  .name.is-clamped {
+    -webkit-mask-image: linear-gradient(180deg, #000 62%, rgba(0, 0, 0, 0.18) 100%);
+    mask-image: linear-gradient(180deg, #000 62%, rgba(0, 0, 0, 0.18) 100%);
+  }
+  .name::selection { background: color-mix(in oklab, var(--accent) 24%, transparent); }
+
+  .doses {
+    display: flex;
+    align-items: center;
+    gap: var(--dot-gap);
+    min-width: 0;
+  }
+
+  .dose {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: var(--dot-size);
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .dose:active .dot { transform: scale(0.9); }
+  .dose:focus-visible { outline: none; }
+  .dose:focus-visible .dot {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .dot {
+    position: relative;
+    width: min(100%, var(--dot-size));
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1.5px solid var(--ring);
+    background: var(--wash);
+    overflow: hidden;
+    transition:
+      transform 0.14s var(--ease),
+      border-color 0.24s ease,
+      background-color 0.24s ease;
+  }
+  .dose:hover .dot { border-color: color-mix(in oklab, var(--accent) 55%, var(--ring)); }
+
+  .fluid {
+    position: absolute;
+    left: -6%;
+    bottom: -1px;
+    width: 112%;
+    height: 0;
+    background: var(--accent);
+    border-radius: 46% 54% 0 0 / 20% 16% 0 0;
+    transition: height 0.42s var(--ease);
+  }
+  .fluid::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 52%);
+  }
+  .dose[aria-pressed="true"] .dot { border-color: var(--accent); }
+  .dose[aria-pressed="true"] .fluid { height: 112%; }
+
+  .core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--accent) 42%, transparent);
+    transition: opacity 0.2s ease;
+  }
+  .dose[aria-pressed="true"] .core { opacity: 0; }
+
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: clamp(6px, 1.8vw, 9px);
+    padding-left: 1px;
+  }
+
+  .count {
+    font-size: 11px;
+    letter-spacing: 0.045em;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+
+  .reset {
+    font: inherit;
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 6px 7px;
+    margin-right: -4px;
+    border-radius: 8px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: color 0.18s ease, background-color 0.18s ease, transform 0.12s ease;
+  }
+  .reset:hover { color: var(--ink); background: var(--wash); }
+  .reset:active { transform: scale(0.94); }
+  .reset[data-armed="true"] { color: var(--med-a); background: var(--wash); }
+  .reset:disabled { opacity: 0.42; cursor: default; background: none; color: var(--muted); }
+  .reset:focus-visible { outline: 2px solid var(--med-a); outline-offset: 1px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fluid, .dose, .name, .reset, .core { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <section class="widget" aria-label="Eye drops tracker">
+    <div class="rows" id="rows"></div>
+    <footer class="foot">
+      <span class="count" id="count" aria-live="polite">0 / 9</span>
+      <button class="reset" id="reset" type="button">Reset</button>
+    </footer>
+  </section>
+
+<script>
+(() => {
+  const LS_KEY = "eye-drops/v1";
+  const RESET_HOUR = 4; // daily rollover at 04:00 local time
+  const MEDS = [
+    { name: "Broxinac", doses: 3 },
+    { name: "Tobradex", doses: 6 },
+  ];
+  const MAX_NAME = 20;
+
+  const rowsEl = document.getElementById("rows");
+  const countEl = document.getElementById("count");
+  const resetBtn = document.getElementById("reset");
+
+  const dayKey = (d = new Date()) => {
+    const s = new Date(d.getTime() - RESET_HOUR * 3600e3);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${s.getFullYear()}-${p(s.getMonth() + 1)}-${p(s.getDate())}`;
+  };
+
+  const freshMarks = () => MEDS.map((m) => Array(m.doses).fill(false));
+
+  const defaultState = () => ({
+    day: dayKey(),
+    names: MEDS.map((m) => m.name),
+    marks: freshMarks(),
+  });
+
+  const cleanName = (value, i) => {
+    const n = String(value ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_NAME);
+    return n || MEDS[i].name;
+  };
+
+  function loadState() {
+    const fallback = defaultState();
+    let raw;
+    try { raw = localStorage.getItem(LS_KEY); } catch { return fallback; }
+    if (!raw) return fallback;
+    try {
+      const s = JSON.parse(raw);
+      const names = MEDS.map((m, i) => cleanName(s.names?.[i], i));
+      let marks = freshMarks();
+      if (s.day === fallback.day && Array.isArray(s.marks)) {
+        marks = MEDS.map((m, i) => {
+          const src = Array.isArray(s.marks[i]) ? s.marks[i] : [];
+          return Array.from({ length: m.doses }, (_, j) => src[j] === true);
+        });
+      }
+      return { day: fallback.day, names, marks };
+    } catch {
+      return fallback;
+    }
+  }
+
+  const state = loadState();
+
+  function persist() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+    } catch {
+      /* storage unavailable: progress lives for this page's lifetime only */
+    }
+  }
+
+  const doseEls = [];
+
+  MEDS.forEach((med, rowIndex) => {
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "name-wrap";
+
+    const tick = document.createElement("span");
+    tick.className = "tick";
+    tick.setAttribute("aria-hidden", "true");
+
+    const name = document.createElement("span");
+    name.className = "name";
+    name.textContent = state.names[rowIndex];
+    name.dataset.fallback = med.name;
+    name.setAttribute("contenteditable", "plaintext-only");
+    if (!name.isContentEditable) name.setAttribute("contenteditable", "true");
+    name.setAttribute("role", "textbox");
+    name.setAttribute("aria-label", `Medication name, row ${rowIndex + 1}`);
+    name.setAttribute("spellcheck", "false");
+    name.setAttribute("autocapitalize", "words");
+    name.setAttribute("autocorrect", "off");
+
+    nameWrap.append(tick, name);
+
+    const doses = document.createElement("div");
+    doses.className = "doses";
+    doseEls[rowIndex] = [];
+
+    for (let i = 0; i < med.doses; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dose";
+      btn.setAttribute("aria-pressed", String(state.marks[rowIndex][i]));
+
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      dot.setAttribute("aria-hidden", "true");
+
+      const fluid = document.createElement("span");
+      fluid.className = "fluid";
+
+      const core = document.createElement("span");
+      core.className = "core";
+
+      dot.append(fluid, core);
+      btn.append(dot);
+      btn.addEventListener("click", () => toggleDose(rowIndex, i));
+      doses.append(btn);
+      doseEls[rowIndex].push(btn);
+    }
+
+    row.append(nameWrap, doses);
+    rowsEl.append(row);
+
+    name.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); name.blur(); }
+      if (e.key === "Escape") { name.textContent = state.names[rowIndex]; name.blur(); }
+    });
+    name.addEventListener("input", () => {
+      if (name.textContent.length > MAX_NAME) {
+        const caretEnd = name.textContent.length;
+        name.textContent = name.textContent.slice(0, MAX_NAME);
+        if (caretEnd > MAX_NAME) setCaretToEnd(name);
+      }
+      commitName(rowIndex, name);
+    });
+    name.addEventListener("blur", () => {
+      name.textContent = commitName(rowIndex, name);
+    });
+    name.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData?.getData("text/plain") || "").replace(/\s+/g, " ");
+      if (!text) return;
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      const node = document.createTextNode(text);
+      range.insertNode(node);
+      range.setStartAfter(node);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      commitName(rowIndex, name);
+    });
+  });
+
+  function setCaretToEnd(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    if (!sel) return;
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function syncNameOverflow(el) {
+    el.classList.toggle("is-clamped", el.scrollHeight > el.clientHeight + 1);
+  }
+
+  function commitName(rowIndex, el) {
+    const cleaned = cleanName(el.textContent, rowIndex);
+    if (el.textContent !== cleaned) el.textContent = cleaned;
+    state.names[rowIndex] = cleaned;
+    updateDoseLabels();
+    syncNameOverflow(el);
+    persist();
+    return cleaned;
+  }
+
+  function toggleDose(rowIndex, doseIndex) {
+    const next = !state.marks[rowIndex][doseIndex];
+    state.marks[rowIndex][doseIndex] = next;
+    doseEls[rowIndex][doseIndex].setAttribute("aria-pressed", String(next));
+    renderSummary();
+    persist();
+  }
+
+  function updateDoseLabels() {
+    MEDS.forEach((med, rowIndex) => {
+      doseEls[rowIndex].forEach((btn, i) => {
+        btn.setAttribute("aria-label", `${state.names[rowIndex]}: dose ${i + 1} of ${med.doses}`);
+      });
+    });
+  }
+
+  function renderSummary() {
+    const taken = state.marks.reduce((sum, row) => sum + row.filter(Boolean).length, 0);
+    const total = MEDS.reduce((sum, m) => sum + m.doses, 0);
+    countEl.textContent = `${taken} / ${total}`;
+    resetBtn.disabled = taken === 0 && resetBtn.dataset.armed !== "true";
+  }
+
+  let armedTimer;
+  function disarmReset() {
+    clearTimeout(armedTimer);
+    delete resetBtn.dataset.armed;
+    resetBtn.textContent = "Reset";
+    renderSummary();
+  }
+
+  resetBtn.addEventListener("click", () => {
+    if (resetBtn.dataset.armed === "true") {
+      state.marks = freshMarks();
+      MEDS.forEach((med, rowIndex) => {
+        doseEls[rowIndex].forEach((btn) => btn.setAttribute("aria-pressed", "false"));
+      });
+      disarmReset();
+      persist();
+      return;
+    }
+    resetBtn.dataset.armed = "true";
+    resetBtn.textContent = "Confirm";
+    renderSummary();
+    armedTimer = setTimeout(disarmReset, 3000);
+  });
+
+  function rollIfNewDay() {
+    const today = dayKey();
+    if (state.day === today) return;
+    state.day = today;
+    state.marks = freshMarks();
+    MEDS.forEach((med, rowIndex) => {
+      doseEls[rowIndex].forEach((btn) => btn.setAttribute("aria-pressed", "false"));
+    });
+    disarmReset();
+    persist();
+  }
+
+  function msUntilRollover() {
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), RESET_HOUR, 0, 0, 0);
+    if (next <= now) next.setDate(next.getDate() + 1);
+    return next - now;
+  }
+
+  let rollTimer;
+  function scheduleRollover() {
+    clearTimeout(rollTimer);
+    rollTimer = setTimeout(() => {
+      rollIfNewDay();
+      scheduleRollover();
+    }, msUntilRollover());
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) rollIfNewDay();
+  });
+  window.addEventListener("focus", rollIfNewDay);
+  setInterval(rollIfNewDay, 60_000);
+
+  updateDoseLabels();
+  renderSummary();
+  document.querySelectorAll(".name").forEach(syncNameOverflow);
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".name").forEach(syncNameOverflow);
+  });
+  persist();
+  scheduleRollover();
+})();
+</script>
+</body>
+</html>
